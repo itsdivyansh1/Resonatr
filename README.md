@@ -1,36 +1,57 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Resonatr
 
-## Getting Started
+**Resonatr** is a powerful all-in-one platform for content creators to manage their social media presence, track analytics, store creative ideas, save resources, plan content, and engage with a creative community — all in one place.
 
-First, run the development server:
+---
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+## 🚀 Features
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+### 🔐 Authentication
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+- Login via email/password or Google
+- Secure session handling using [Better Auth](https://www.better-auth.com/)
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+### 🔗 Social Media Integrations
 
-## Learn More
+- Connect and manage multiple accounts across platforms like YouTube, Instagram, Twitter, TikTok
+- OAuth-based secure token storage per account
 
-To learn more about Next.js, take a look at the following resources:
+### 📊 Unified Analytics Dashboard
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+- Track followers, engagement, views, and growth across all connected platforms
+- Visual insights, trend graphs, and platform comparisons
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+### 💡 Idea Vault
 
-## Deploy on Vercel
+- Save content ideas with tags, status, and notes
+- Kanban-style workflow for content production (Idea → Script → Shoot → Publish)
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+### 📁 Resource Locker
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- Save links, videos, images, and documents for future content
+- Organize by type and tag for easy retrieval
+
+### 🗓️ Content Calendar
+
+- Schedule and plan posts by platform
+- Drag-and-drop interface (coming soon)
+- Automatic status updates: planned, posted, missed
+
+### 💬 Community Tab
+
+- Ask questions, share tips, and collaborate with fellow creators
+- Public and private discussion threads
+
+---
+
+## 🧱 Tech Stack
+
+| Layer        | Stack                                                  |
+| ------------ | ------------------------------------------------------ |
+| **Frontend** | Next.js                                                |
+| **Auth**     | [Better Auth](https://better-auth.com)                 |
+| **Backend**  | API Routes                                             |
+| **Database** | PostgreSQL via [Drizzle ORM](https://orm.drizzle.team) |
+| **OAuth**    | YouTube, Instagram, Twitter, etc.                      |
+
+---
