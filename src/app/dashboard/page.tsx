@@ -20,8 +20,17 @@ import {
   SidebarTrigger,
 } from "@/components/ui/sidebar";
 import { ActionButtons } from "./_components/action-buttons";
+import { auth } from "@/lib/auth";
+import { headers } from "next/headers";
+import { redirect } from "next/navigation";
 
-export default function Page() {
+export default async function Page() {
+  const session = await auth.api.getSession({
+    headers: await headers(),
+  });
+
+  if (!session) redirect("/login");
+
   return (
     <SidebarProvider>
       <AppSidebar />
@@ -61,6 +70,7 @@ export default function Page() {
                 <Chart04 />
                 <Chart05 />
                 <Chart06 /> */}
+                {JSON.stringify(session, null, 2)}
               </div>
             </div>
           </div>

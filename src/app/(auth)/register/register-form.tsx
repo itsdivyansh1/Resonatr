@@ -68,14 +68,16 @@ export function RegisterForm({
     setIsLoading(true);
 
     const { success, message } = await signUpAction(
+      values.name,
       values.email,
-      values.password,
-      values.name
+      values.password
     );
+
+    console.log(values.email);
 
     if (success) {
       toast.success(message as string);
-      router.push("/dashboard");
+      router.push("/login");
     } else {
       toast.error(message as string);
     }

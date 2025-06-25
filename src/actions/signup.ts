@@ -10,21 +10,23 @@ export const signUpAction = async (
   try {
     await auth.api.signUpEmail({
       body: {
-        name,
         email,
         password,
+        name,
       },
     });
 
     return {
       success: true,
-      message: "Registered successfully",
+      message: "Signed up successfully, verification link send on mail",
     };
   } catch (error) {
     const e = error as Error;
+    console.log(e);
+
     return {
       success: false,
-      message: { error: e.message || "An unknown error occurred" },
+      message: e.message || "An unknown error occurred.",
     };
   }
 };

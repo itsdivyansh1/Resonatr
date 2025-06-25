@@ -4,8 +4,10 @@ import { ArrowRightIcon } from "lucide-react";
 import Link from "next/link";
 
 import { FlickeringGrid } from "@/components/ui/flickering-grid";
+import { auth } from "@/lib/auth";
+import { headers } from "next/headers";
 
-const HeroSection = () => {
+const HeroSection = async () => {
   return (
     <section className="py-20 sm:py-24 relative w-full h-[calc(100vh-64px)]">
       <FlickeringGrid

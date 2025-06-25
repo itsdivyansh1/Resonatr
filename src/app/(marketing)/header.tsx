@@ -11,6 +11,16 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
+import UserMenu from "@/components/user-menu";
+import { auth } from "@/lib/auth";
+import {
+  BoltIcon,
+  BookOpenIcon,
+  Layers2Icon,
+  PinIcon,
+  UserPenIcon,
+} from "lucide-react";
+import { headers } from "next/headers";
 import Image from "next/image";
 import Link from "next/link";
 
@@ -21,7 +31,27 @@ const navigationLinks = [
   { href: "/contact-us", label: "Contact us" },
 ];
 
-const Header = () => {
+const menuGroups = [
+  [
+    { icon: <BoltIcon size={16} />, label: "Dashboard", href: "/dashboard" },
+    { icon: <Layers2Icon size={16} />, label: "Projects", href: "/projects" },
+    { icon: <BookOpenIcon size={16} />, label: "Docs", href: "/docs" },
+  ],
+  [
+    { icon: <PinIcon size={16} />, label: "Bookmarks", href: "/bookmarks" },
+    {
+      icon: <UserPenIcon size={16} />,
+      label: "Edit Profile",
+      href: "/settings/profile",
+    },
+  ],
+];
+
+const Header = async () => {
+  const session = await auth.api.getSession({
+    headers: await headers(),
+  });
+
   return (
     <header className="border-b bg-background text-foreground">
       <div className="container max-w-screen-xl mx-auto px-4 md:px-6">
@@ -97,12 +127,23 @@ const Header = () => {
           {/* Right side */}
           <div className="flex items-center gap-2">
             <ModeToggle />
-            <Button asChild variant="ghost" size="sm" className="text-sm">
-              <Link href="/login">Login</Link>
-            </Button>
-            <Button asChild size="sm" className="text-sm">
-              <Link href="/register">Register</Link>
-            </Button>
+            {session ? (
+              <UserMenu
+                name={session.user.name}
+                email={session.user.email}
+                avatarUrl={session.user.image || "undefined"}
+                menuGroups={menuGroups}
+              />
+            ) : (
+              <>
+                <Button asChild variant="ghost" size="sm" className="text-sm">
+                  <Link href="/login">Login</Link>
+                </Button>
+                <Button asChild size="sm" className="text-sm">
+                  <Link href="/register">Register</Link>
+                </Button>
+              </>
+            )}
           </div>
         </div>
       </div>
