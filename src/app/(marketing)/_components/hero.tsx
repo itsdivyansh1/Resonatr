@@ -4,8 +4,6 @@ import { ArrowRightIcon } from "lucide-react";
 import Link from "next/link";
 
 import { FlickeringGrid } from "@/components/ui/flickering-grid";
-import { auth } from "@/lib/auth";
-import { headers } from "next/headers";
 
 const HeroSection = async () => {
   return (

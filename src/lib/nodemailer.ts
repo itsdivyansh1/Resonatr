@@ -1,5 +1,4 @@
 import nodemailer from "nodemailer";
-import { render } from "@react-email/components";
 
 const transporter = nodemailer.createTransport({
   host: "smtp.gmail.com",

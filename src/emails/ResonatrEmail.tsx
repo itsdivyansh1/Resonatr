@@ -1,12 +1,12 @@
 import {
-  Html,
-  Head,
-  Preview,
   Body,
   Container,
-  Text,
+  Head,
+  Html,
   Link,
+  Preview,
   Section,
+  Text,
 } from "@react-email/components";
 
 type ResonatrEmailProps = {
