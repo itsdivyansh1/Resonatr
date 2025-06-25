@@ -2,6 +2,7 @@ import { GalleryVerticalEnd } from "lucide-react";
 
 import Link from "next/link";
 import { ResetPasswordForm } from "./reset-password";
+import { Suspense } from "react";
 
 export default function LoginPage() {
   return (
@@ -16,7 +17,9 @@ export default function LoginPage() {
           </div>
           Resonatr
         </Link>
-        <ResetPasswordForm />
+        <Suspense fallback={<div>Loading...</div>}>
+          <ResetPasswordForm />
+        </Suspense>
       </div>
     </div>
   );
