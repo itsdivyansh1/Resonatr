@@ -30,6 +30,8 @@ export async function sendEmailAction({
 
     return { success: true };
   } catch (err) {
-    return { success: false };
+    const e = err as Error;
+
+    return { success: false, message: e.message };
   }
 }
