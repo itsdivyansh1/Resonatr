@@ -161,9 +161,11 @@ export const FlickeringGrid: React.FC<FlickeringGridProps> = ({
       animationFrameId = requestAnimationFrame(animate);
     };
 
+    let resizeTimeoutId: NodeJS.Timeout;
+
     const debouncedResize = () => {
-      clearTimeout((debouncedResize as any)._t);
-      (debouncedResize as any)._t = setTimeout(() => {
+      clearTimeout(resizeTimeoutId);
+      resizeTimeoutId = setTimeout(() => {
         const newWidth = width || container.clientWidth;
         const newHeight = height || container.clientHeight;
         canvasSizeRef.current = { width: newWidth, height: newHeight };
