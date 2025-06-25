@@ -1,3 +1,4 @@
+import CtaSection from "./_components/cta-section";
 import FeatureSection from "./_components/features";
 import HeroSection from "./_components/hero";
 
@@ -6,6 +7,7 @@ const Home = () => {
     <>
       <HeroSection />
       <FeatureSection />
+      <CtaSection />
     </>
   );
 };

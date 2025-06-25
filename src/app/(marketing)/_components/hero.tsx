@@ -4,7 +4,6 @@ import { ArrowRightIcon } from "lucide-react";
 import Link from "next/link";
 
 import { FlickeringGrid } from "@/components/ui/flickering-grid";
-import { useTheme } from "next-themes";
 
 const HeroSection = () => {
   return (
