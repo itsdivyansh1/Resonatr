@@ -8,7 +8,6 @@ import {
   RiTwitterXFill,
   RiYoutubeFill,
 } from "@remixicon/react";
-import Link from "next/link";
 
 const platforms = [
   {
