@@ -1,42 +1,46 @@
 import { TooltipProps } from "recharts";
 
+interface RechartsTooltipPayload {
+  dataKey?: string;
+  value?: number;
+  name?: string;
+  color?: string;
+  [key: string]: any;
+}
+
 interface CustomTooltipContentProps extends TooltipProps<number, string> {
+  payload?: RechartsTooltipPayload[];
+  label?: string | number;
   colorMap?: Record<string, string>;
   labelMap?: Record<string, string>;
-  // Optional array to define display order
   dataKeys?: string[];
-  // Optional formatter for values
   valueFormatter?: (value: number) => string;
 }
 
 export function CustomTooltipContent({
   active,
-  payload,
+  payload = [],
   label,
   colorMap = {},
   labelMap = {},
-  dataKeys, // If provided, will be used to order the items
+  dataKeys,
   valueFormatter = (value) => `$${value.toLocaleString()}`,
 }: CustomTooltipContentProps) {
-  if (!active || !payload || !payload.length) {
+  if (!active || !payload.length) {
     return null;
   }
 
-  // Create a map of payload items by dataKey for easy lookup
   const payloadMap = payload.reduce(
     (acc, item) => {
-      acc[item.dataKey as string] = item;
+      const key = item.dataKey as string;
+      if (key) acc[key] = item;
       return acc;
     },
-    {} as Record<string, (typeof payload)[0]>
+    {} as Record<string, RechartsTooltipPayload>
   );
 
-  // If dataKeys is provided, use it to order the items
-  // Otherwise, use the original payload order
   const orderedPayload = dataKeys
-    ? dataKeys
-        .filter((key) => payloadMap[key]) // Only include keys that exist in the payload
-        .map((key) => payloadMap[key])
+    ? dataKeys.filter((key) => payloadMap[key]).map((key) => payloadMap[key])
     : payload;
 
   return (
@@ -44,13 +48,11 @@ export function CustomTooltipContent({
       <div className="font-medium">{label}</div>
       <div className="grid gap-1.5">
         {orderedPayload.map((entry, index) => {
-          // Skip undefined entries
           if (!entry) return null;
 
           const name = entry.dataKey as string;
           const value = entry.value as number;
 
-          // Get color and label from maps, with fallbacks
           const color = colorMap[name] || "var(--chart-1)";
           const displayLabel = labelMap[name] || name;
 
