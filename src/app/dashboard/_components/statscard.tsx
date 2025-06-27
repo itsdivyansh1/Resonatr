@@ -33,7 +33,7 @@ const platforms = [
   },
   {
     platform: "Twitter",
-    icon: <RiTwitterXFill className="text-white w-5 h-5" />,
+    icon: <RiTwitterXFill className="text-black dark:text-white w-5 h-5" />,
     followers: "9.6k",
     posts: 6,
     growth: "+3.4%",

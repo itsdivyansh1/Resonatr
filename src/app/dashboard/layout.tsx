@@ -24,7 +24,6 @@ import { redirect } from "next/navigation";
 import { ActionButtons } from "./_components/action-buttons";
 import { AppSidebar } from "./_components/app-sidebar";
 
-// ✅ Named async function to avoid ESLint errors
 async function DashboardLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {

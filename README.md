@@ -55,3 +55,10 @@
 | **OAuth**    | YouTube, Instagram, Twitter, etc.                      |
 
 ---
+
+[Header: Hi Dev 👋]  
+[Platform Stats Grid]  
+[Content Calendar] [Recent Ideas]  
+[Analytics Preview] [Workflow Status]  
+[Resources] [Quick Actions]  
+[Community Highlights / Tips]
