@@ -5,7 +5,7 @@ interface RechartsTooltipPayload {
   value?: number;
   name?: string;
   color?: string;
-  [key: string]: any;
+  [key: string]: unknown;
 }
 
 interface CustomTooltipContentProps extends TooltipProps<number, string> {
