@@ -4,7 +4,6 @@ export const metadata: Metadata = {
   title: "Dashboard - Resonatr",
 };
 
-import { AppSidebar } from "./_components/app-sidebar";
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -19,12 +18,14 @@ import {
   SidebarProvider,
   SidebarTrigger,
 } from "@/components/ui/sidebar";
-import { ActionButtons } from "./_components/action-buttons";
 import { auth } from "@/lib/auth";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
+import { ActionButtons } from "./_components/action-buttons";
+import { AppSidebar } from "./_components/app-sidebar";
 
-export default async function ({
+// ✅ Named async function to avoid ESLint errors
+async function DashboardLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
   const session = await auth.api.getSession({
@@ -71,3 +72,5 @@ export default async function ({
     </SidebarProvider>
   );
 }
+
+export default DashboardLayout;
