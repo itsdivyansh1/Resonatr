@@ -1,6 +1,5 @@
 "use client";
 
-import { createIdea } from "@/actions/idea";
 import TiptapEditor from "@/components/tiptap-editor";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -13,8 +12,7 @@ import {
 } from "@/components/ui/select";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Loader2 } from "lucide-react";
-import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { z } from "zod";
 import { Label } from "./ui/label";
@@ -39,7 +37,7 @@ const formSchema = z.object({
     ),
 });
 
-type FormData = z.infer<typeof formSchema>;
+export type FormData = z.infer<typeof formSchema>;
 
 const PLATFORMS = [
   "YouTube",
@@ -63,12 +61,22 @@ const STAGES = [
 
 interface IdeaFormProps {
   initialData?: Partial<FormData>;
-  onSuccess?: () => void;
+  onSubmit: (data: FormData) => Promise<void>;
+  onCancel?: () => void;
+  submitLabel?: string;
+  showResetButton?: boolean;
+  isLoading?: boolean;
 }
 
-export default function IdeaForm({ initialData, onSuccess }: IdeaFormProps) {
+export default function IdeaForm({
+  initialData,
+  onSubmit,
+  onCancel,
+  submitLabel = "Save Idea",
+  showResetButton = true,
+  isLoading: externalLoading = false,
+}: IdeaFormProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const router = useRouter();
 
   const {
     register,
@@ -87,132 +95,162 @@ export default function IdeaForm({ initialData, onSuccess }: IdeaFormProps) {
     mode: "onChange",
   });
 
-  const onSubmit = async (data: FormData) => {
+  // Update form when initialData changes (useful for edit mode)
+  useEffect(() => {
+    if (initialData) {
+      reset({
+        title: initialData.title || "",
+        platform: initialData.platform || "YouTube",
+        stage: initialData.stage || "idea",
+        content: initialData.content || "",
+      });
+    }
+  }, [initialData, reset]);
+
+  const handleFormSubmit = async (data: FormData) => {
     try {
       setIsSubmitting(true);
-      await createIdea(data);
-
-      if (onSuccess) {
-        onSuccess();
-      } else {
-        router.push("/dashboard/ideas");
-      }
-
-      // Reset form on success
-      reset();
+      await onSubmit(data);
     } catch (error) {
-      console.error("Failed to create idea:", error);
-      // You might want to show a toast notification here
+      console.error("Form submission error:", error);
+      // Error handling is delegated to parent component
     } finally {
       setIsSubmitting(false);
     }
   };
 
+  const handleReset = () => {
+    reset();
+  };
+
+  const handleCancel = () => {
+    if (onCancel) {
+      onCancel();
+    } else {
+      reset();
+    }
+  };
+
+  const isLoading = isSubmitting || externalLoading;
+
   return (
     <form
-      onSubmit={handleSubmit(onSubmit)}
-      className="space-y-6 bg-background shadow-sm"
+      onSubmit={handleSubmit(handleFormSubmit)}
+      className="space-y-2 bg-background shadow-sm"
     >
       {/* Title Field */}
-      <div className="space-y-2">
-        <Label htmlFor="title" className="text-sm font-medium">
-          Title <span className="text-destructive">*</span>
-        </Label>
-        <Input
-          id="title"
-          placeholder="What's your idea called?"
-          {...register("title")}
-          className="text-sm"
-          aria-describedby={errors.title ? "title-error" : undefined}
-        />
-        {errors.title && (
-          <p id="title-error" className="text-xs text-destructive mt-1">
-            {errors.title.message}
-          </p>
-        )}
-      </div>
-
-      {/* Platform and Stage Fields */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        <div className="space-y-2">
-          <Label htmlFor="platform" className="text-sm font-medium">
-            Platform <span className="text-destructive">*</span>
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
+        <div className="space-y-2 col-span-2">
+          <Label htmlFor="title" className="text-sm font-medium">
+            Title
           </Label>
-          <Controller
-            name="platform"
-            control={control}
-            render={({ field }) => (
-              <Select value={field.value} onValueChange={field.onChange}>
-                <SelectTrigger
-                  id="platform"
-                  className="w-full"
-                  aria-describedby={
-                    errors.platform ? "platform-error" : undefined
-                  }
-                >
-                  <SelectValue placeholder="Select platform" />
-                </SelectTrigger>
-                <SelectContent>
-                  {PLATFORMS.map((platform) => (
-                    <SelectItem key={platform} value={platform}>
-                      {platform}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            )}
+          <Input
+            id="title"
+            placeholder="What's your idea called?"
+            {...register("title")}
+            className="text-sm"
+            disabled={isLoading}
+            aria-describedby={errors.title ? "title-error" : undefined}
           />
-          {errors.platform && (
-            <p id="platform-error" className="text-xs text-destructive mt-1">
-              {errors.platform.message}
+          {errors.title && (
+            <p id="title-error" className="text-xs text-destructive mt-1">
+              {errors.title.message}
             </p>
           )}
         </div>
 
-        <div className="space-y-2">
-          <Label htmlFor="stage" className="text-sm font-medium">
-            Stage <span className="text-destructive">*</span>
-          </Label>
-          <Controller
-            name="stage"
-            control={control}
-            render={({ field }) => (
-              <Select value={field.value} onValueChange={field.onChange}>
-                <SelectTrigger
-                  id="stage"
-                  className="w-full"
-                  aria-describedby={errors.stage ? "stage-error" : undefined}
+        {/* Platform and Stage Fields */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+          <div className="space-y-2">
+            <Label htmlFor="platform" className="text-sm font-medium">
+              Platform
+            </Label>
+            <Controller
+              name="platform"
+              control={control}
+              render={({ field }) => (
+                <Select
+                  value={field.value}
+                  onValueChange={field.onChange}
+                  disabled={isLoading}
                 >
-                  <SelectValue placeholder="Select stage" />
-                </SelectTrigger>
-                <SelectContent>
-                  {STAGES.map((stage) => (
-                    <SelectItem key={stage.value} value={stage.value}>
-                      {stage.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+                  <SelectTrigger
+                    id="platform"
+                    className="w-full"
+                    aria-describedby={
+                      errors.platform ? "platform-error" : undefined
+                    }
+                  >
+                    <SelectValue placeholder="Select platform" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {PLATFORMS.map((platform) => (
+                      <SelectItem key={platform} value={platform}>
+                        {platform}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              )}
+            />
+            {errors.platform && (
+              <p id="platform-error" className="text-xs text-destructive mt-1">
+                {errors.platform.message}
+              </p>
             )}
-          />
-          {errors.stage && (
-            <p id="stage-error" className="text-xs text-destructive mt-1">
-              {errors.stage.message}
-            </p>
-          )}
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="stage" className="text-sm font-medium">
+              Stage
+            </Label>
+            <Controller
+              name="stage"
+              control={control}
+              render={({ field }) => (
+                <Select
+                  value={field.value}
+                  onValueChange={field.onChange}
+                  disabled={isLoading}
+                >
+                  <SelectTrigger
+                    id="stage"
+                    className="w-full"
+                    aria-describedby={errors.stage ? "stage-error" : undefined}
+                  >
+                    <SelectValue placeholder="Select stage" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {STAGES.map((stage) => (
+                      <SelectItem key={stage.value} value={stage.value}>
+                        {stage.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              )}
+            />
+            {errors.stage && (
+              <p id="stage-error" className="text-xs text-destructive mt-1">
+                {errors.stage.message}
+              </p>
+            )}
+          </div>
         </div>
       </div>
 
       {/* Content Field */}
       <div className="space-y-2">
-        <Label htmlFor="content" className="text-sm font-medium">
-          Content <span className="text-destructive">*</span>
-        </Label>
         <Controller
           name="content"
           control={control}
           render={({ field }) => (
-            <TiptapEditor value={field.value} onChange={field.onChange} />
+            <TiptapEditor
+              value={field.value}
+              onChange={field.onChange}
+              // @ts-ignore
+              disabled={isLoading}
+            />
           )}
         />
         {errors.content && (
@@ -222,29 +260,42 @@ export default function IdeaForm({ initialData, onSuccess }: IdeaFormProps) {
         )}
       </div>
 
-      {/* Submit Button */}
-      <div className="flex gap-3">
-        <Button
-          type="submit"
-          disabled={isSubmitting || !isValid}
-          className="w-fit"
-        >
-          {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-          {isSubmitting ? (
-            <Loader2 className="animate-spin size-4" />
-          ) : (
-            "Save Idea"
-          )}
-        </Button>
+      {/* Action Buttons */}
+      <div className="flex gap-3 justify-end">
+        {showResetButton && (
+          <Button
+            type="button"
+            variant="outline"
+            onClick={handleReset}
+            disabled={isLoading}
+            className="w-fit"
+          >
+            Reset
+          </Button>
+        )}
+
+        {onCancel && (
+          <Button
+            type="button"
+            variant="outline"
+            onClick={handleCancel}
+            disabled={isLoading}
+            className="w-fit"
+          >
+            Cancel
+          </Button>
+        )}
 
         <Button
-          type="button"
-          variant="outline"
-          onClick={() => reset()}
-          disabled={isSubmitting}
+          type="submit"
+          disabled={isLoading || !isValid}
           className="w-fit"
         >
-          Reset
+          {isLoading ? (
+            <Loader2 className="animate-spin size-4" />
+          ) : (
+            submitLabel
+          )}
         </Button>
       </div>
     </form>

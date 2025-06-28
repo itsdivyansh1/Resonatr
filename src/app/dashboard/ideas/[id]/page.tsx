@@ -6,7 +6,6 @@ import { getIdeaById, updateIdea, deleteIdea } from "@/actions/idea";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Input } from "@/components/ui/input";
 import {
   RiYoutubeFill,
   RiInstagramLine,
@@ -14,7 +13,18 @@ import {
   RiEdit2Line,
   RiDeleteBinLine,
 } from "@remixicon/react";
-import TiptapEditor from "@/components/tiptap-editor";
+import IdeaForm, { FormData } from "@/components/idea-form";
+import {
+  AlertDialog,
+  AlertDialogTrigger,
+  AlertDialogContent,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogCancel,
+  AlertDialogAction,
+} from "@/components/ui/alert-dialog";
 
 type Idea = {
   id: string;
@@ -44,43 +54,66 @@ export default function EditIdeaPage() {
 
   const [idea, setIdea] = useState<Idea | null>(null);
   const [editing, setEditing] = useState(false);
-  const [title, setTitle] = useState("");
-  const [platform, setPlatform] = useState("");
-  const [stage, setStage] = useState("");
-  const [content, setContent] = useState("");
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     async function load() {
       if (!id) return;
       try {
+        setLoading(true);
         const data: any = await getIdeaById(id);
         if (data) {
           setIdea(data);
-          setTitle(data.title);
-          setPlatform(data.platform ?? "Unknown");
-          setStage(data.stage ?? "Idea");
-          setContent(data.description ?? "");
         }
       } catch (err) {
         console.error("Error fetching idea:", err);
+      } finally {
+        setLoading(false);
       }
     }
     load();
   }, [id]);
 
-  if (!idea) return <p className="text-muted-foreground">Loading...</p>;
+  const handleUpdate = async (formData: FormData) => {
+    await updateIdea(id, {
+      title: formData.title,
+      platform: formData.platform,
+      stage: formData.stage,
+      content: formData.content,
+    });
 
-  const handleSave = async () => {
-    await updateIdea(id, { title, platform, stage, content });
+    setIdea((prev) =>
+      prev
+        ? {
+            ...prev,
+            title: formData.title,
+            platform: formData.platform,
+            stage: formData.stage,
+            description: formData.content,
+          }
+        : null
+    );
+
     setEditing(false);
     router.refresh();
   };
 
   const handleDelete = async () => {
-    if (!confirm("Are you sure you want to delete this idea?")) return;
     await deleteIdea(id);
     router.push("/dashboard/ideas");
   };
+
+  const handleCancelEdit = () => {
+    setEditing(false);
+  };
+
+  if (loading) {
+    return <p className="text-muted-foreground">Loading...</p>;
+  }
+
+  if (!idea) {
+    return <p className="text-muted-foreground">Idea not found.</p>;
+  }
 
   return (
     <div className="space-y-6">
@@ -95,13 +128,37 @@ export default function EditIdeaPage() {
             variant="outline"
             size="sm"
           >
-            <RiEdit2Line className="w-4 h-4" />
+            <RiEdit2Line className="w-4 h-4 mr-1" />
             {editing ? "Cancel" : "Edit"}
           </Button>
-          <Button onClick={handleDelete} variant="destructive" size="sm">
-            <RiDeleteBinLine className="w-4 h-4" />
-            Delete
-          </Button>
+
+          {/* AlertDialog for Delete */}
+          <AlertDialog>
+            <AlertDialogTrigger asChild>
+              <Button variant="destructive" size="sm">
+                <RiDeleteBinLine className="w-4 h-4 mr-1" />
+                Delete
+              </Button>
+            </AlertDialogTrigger>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                <AlertDialogDescription>
+                  This action cannot be undone. This will permanently delete the
+                  idea and remove it from the database.
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                <AlertDialogAction
+                  onClick={handleDelete}
+                  className="bg-destructive text-white hover:bg-destructive/90"
+                >
+                  Yes, delete
+                </AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
         </div>
       </div>
 
@@ -109,8 +166,8 @@ export default function EditIdeaPage() {
         <CardHeader className="pb-2">
           <CardTitle>{idea.title}</CardTitle>
           <div className="flex items-center gap-2 mt-2">
-            <Badge variant="secondary">{platform}</Badge>
-            <Badge variant="outline">{stage}</Badge>
+            <Badge variant="secondary">{idea.platform}</Badge>
+            <Badge variant="outline">{idea.stage}</Badge>
             <span className="text-xs text-muted-foreground">
               Created on{" "}
               {typeof idea.createdAt === "string"
@@ -121,31 +178,22 @@ export default function EditIdeaPage() {
         </CardHeader>
         <CardContent>
           {editing ? (
-            <div className="space-y-4">
-              <Input
-                value={title}
-                onChange={(e) => setTitle(e.target.value)}
-                placeholder="Title"
-              />
-              <Input
-                value={platform}
-                onChange={(e) => setPlatform(e.target.value)}
-                placeholder="Platform"
-              />
-              <Input
-                value={stage}
-                onChange={(e) => setStage(e.target.value)}
-                placeholder="Stage"
-              />
-              <TiptapEditor value={content} onChange={setContent} />
-              <Button onClick={handleSave} className="mt-2">
-                Save Changes
-              </Button>
-            </div>
+            <IdeaForm
+              initialData={{
+                title: idea.title,
+                platform: idea.platform,
+                stage: idea.stage,
+                content: idea.description,
+              }}
+              onSubmit={handleUpdate}
+              onCancel={handleCancelEdit}
+              submitLabel="Update Idea"
+              showResetButton={false}
+            />
           ) : (
             <div
               className="prose prose-sm prose-invert max-w-full text-muted-foreground"
-              dangerouslySetInnerHTML={{ __html: content }}
+              dangerouslySetInnerHTML={{ __html: idea.description }}
             />
           )}
         </CardContent>

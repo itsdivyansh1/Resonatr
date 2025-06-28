@@ -1,13 +1,36 @@
 // app/dashboard/ideas/new/page.tsx
 "use client";
 
-import IdeaForm from "@/components/idea-form";
+import { createIdea } from "@/actions/idea";
+import { useRouter } from "next/navigation";
+import IdeaForm, { FormData } from "@/components/idea-form";
 
-export default function NewIdeaPage() {
+interface NewIdeaPageProps {
+  onSuccess?: () => void;
+  redirectTo?: string;
+}
+
+export default function NewIdeaPage({
+  onSuccess,
+  redirectTo = "/dashboard/ideas",
+}: NewIdeaPageProps) {
+  const router = useRouter();
+
+  const handleSubmit = async (data: FormData) => {
+    await createIdea(data);
+
+    if (onSuccess) {
+      onSuccess();
+    } else {
+      router.push(redirectTo);
+    }
+  };
+
   return (
-    <>
-      <div className="text-lg font-semibold">Create New Idea</div>
-      <IdeaForm />
-    </>
+    <IdeaForm
+      onSubmit={handleSubmit}
+      submitLabel="Create Idea"
+      showResetButton={true}
+    />
   );
 }
