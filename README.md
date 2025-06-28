@@ -4,6 +4,14 @@
 
 ---
 
+## Todo
+
+[ ] Improve Ideas Editor
+[ ] Add auto-save functionality in the editor
+[ ] Fetch youtube data
+
+---
+
 ## 🚀 Features
 
 ### 🔐 Authentication
