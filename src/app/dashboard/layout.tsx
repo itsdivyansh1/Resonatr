@@ -64,7 +64,7 @@ async function DashboardLayout({
               {/* Right side */}
               <ActionButtons />
             </header>
-            <main className="mt-4">{children}</main>
+            <main className="my-4">{children}</main>
           </div>
         </div>
       </SidebarInset>

@@ -60,4 +60,20 @@ export const verification = pgTable("verification", {
   ),
 });
 
-export const schema = { user, session, account, verification };
+export const ideas = pgTable("ideas", {
+  id: text("id").primaryKey(),
+  userId: text("user_id").notNull().references(() => user.id, { onDelete: "cascade" }),
+
+  title: text("title").notNull(),
+  description: text("description"),
+  platform: text("platform"), // e.g., "YouTube", "Instagram"
+  stage: text("stage").$default(() => "idea"), // idea, script, shoot, publish
+  tags: text("tags"), // Optional: comma-separated or JSON later
+  archived: boolean("archived").$defaultFn(() => false),
+  deleted: boolean("deleted").$defaultFn(() => false),
+
+  createdAt: timestamp("created_at").$defaultFn(() => new Date()).notNull(),
+  updatedAt: timestamp("updated_at").$defaultFn(() => new Date()).notNull(),
+});
+
+export const schema = { user, session, account, verification, ideas };

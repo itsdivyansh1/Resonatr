@@ -7,7 +7,7 @@ const resources = [
   { title: "IG Algorithm Update 2024", type: "Article", source: "Medium" },
 ];
 
-export default function ResourcePreview() {
+export default function SavedResources() {
   return (
     <Card>
       <CardHeader>
