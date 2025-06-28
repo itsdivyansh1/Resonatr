@@ -28,7 +28,7 @@ const formSchema = z.object({
   stage: z.string().min(1, "Please select a stage"),
   content: z
     .string()
-    .min(10, "Content must be at least 10 characters")
+    .min(10, "Content cannot not be empty")
     .refine(
       (val) => {
         // Check if content is not just empty HTML tags
@@ -111,7 +111,7 @@ export default function IdeaForm({ initialData, onSuccess }: IdeaFormProps) {
   return (
     <form
       onSubmit={handleSubmit(onSubmit)}
-      className="space-y-6 border border-border rounded-xl p-6 bg-background shadow-sm"
+      className="space-y-6 bg-background shadow-sm"
     >
       {/* Title Field */}
       <div className="space-y-2">
@@ -230,7 +230,11 @@ export default function IdeaForm({ initialData, onSuccess }: IdeaFormProps) {
           className="w-fit"
         >
           {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-          {isSubmitting ? "Saving..." : "Save Idea"}
+          {isSubmitting ? (
+            <Loader2 className="animate-spin size-4" />
+          ) : (
+            "Save Idea"
+          )}
         </Button>
 
         <Button

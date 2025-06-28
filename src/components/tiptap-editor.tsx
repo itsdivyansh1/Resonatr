@@ -99,7 +99,7 @@ export default function TiptapEditor({
     editorProps: {
       attributes: {
         class:
-          "prose dark:prose-invert max-w-none min-h-[300px] p-4 focus:outline-none",
+          "prose dark:prose-invert max-w-none min-h-[300px] p-2 focus:outline-none",
       },
     },
     content: value,
@@ -438,7 +438,7 @@ export default function TiptapEditor({
       </div>
 
       <div
-        className="prose dark:prose-invert max-w-none p-4 min-h-[300px] focus:outline-none [&_h1]:mt-0 [&_h2]:mt-0 [&_.ProseMirror]:focus:outline-none [&_.ProseMirror]:selection:bg-blue-100 [&_.ProseMirror]:dark:selection:bg-blue-900/50 [&_.ProseMirror]:selection:text-blue-900 [&_.ProseMirror]:dark:selection:text-blue-100"
+        className="prose dark:prose-invert max-w-none p-4 min-h-[300px] focus:outline-none [&_h1]:mt-0 [&_h2]:mt-0 [&_.ProseMirror]:focus:outline-none [&_.ProseMirror]:selection:bg-blue-100 [&_.ProseMirror]:dark:selection:bg-blue-900/50 [&_.ProseMirror]:selection:text-blue-900 [&_.ProseMirror]:dark:selection:text-blue-100 [&_p]:my-2 [&_p]:leading-snug"
         onClick={() => editor.commands.focus()}
       >
         <EditorContent
