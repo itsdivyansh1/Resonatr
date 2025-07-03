@@ -1,4 +1,10 @@
-import { pgTable, text, timestamp, boolean } from "drizzle-orm/pg-core";
+import {
+  pgTable,
+  text,
+  timestamp,
+  boolean,
+  varchar,
+} from "drizzle-orm/pg-core";
 
 export const user = pgTable("user", {
   id: text("id").primaryKey(),
@@ -62,7 +68,9 @@ export const verification = pgTable("verification", {
 
 export const ideas = pgTable("ideas", {
   id: text("id").primaryKey(),
-  userId: text("user_id").notNull().references(() => user.id, { onDelete: "cascade" }),
+  userId: text("user_id")
+    .notNull()
+    .references(() => user.id, { onDelete: "cascade" }),
 
   title: text("title").notNull(),
   description: text("description"),
@@ -72,8 +80,38 @@ export const ideas = pgTable("ideas", {
   archived: boolean("archived").$defaultFn(() => false),
   deleted: boolean("deleted").$defaultFn(() => false),
 
-  createdAt: timestamp("created_at").$defaultFn(() => new Date()).notNull(),
-  updatedAt: timestamp("updated_at").$defaultFn(() => new Date()).notNull(),
+  createdAt: timestamp("created_at")
+    .$defaultFn(() => new Date())
+    .notNull(),
+  updatedAt: timestamp("updated_at")
+    .$defaultFn(() => new Date())
+    .notNull(),
 });
 
-export const schema = { user, session, account, verification, ideas };
+export const events = pgTable("event", {
+  id: text("id").primaryKey(),
+
+  userId: text("user_id")
+    .notNull()
+    .references(() => user.id, { onDelete: "cascade" }),
+
+  title: text("title").notNull(),
+  description: text("description"),
+
+  start: timestamp("start", { withTimezone: true }).notNull(),
+  end: timestamp("end", { withTimezone: true }).notNull(),
+
+  color: varchar("color", { length: 50 }).notNull(), // sky, rose, etc.
+  platform: varchar("platform", { length: 100 }).notNull(), // youtube, instagram, etc.
+  status: varchar("status", { length: 100 }).notNull(), // scheduled, posted, missed
+
+  createdAt: timestamp("created_at")
+    .$defaultFn(() => new Date())
+    .notNull(),
+
+  updatedAt: timestamp("updated_at")
+    .$defaultFn(() => new Date())
+    .notNull(),
+});
+
+export const schema = { user, session, account, verification, ideas, events };
