@@ -3,10 +3,11 @@
 import { db } from "@/db/drizzle";
 import { events } from "@/db/schema";
 import { auth } from "@/lib/auth";
-import { eq, and } from "drizzle-orm";
+import { eq, and, gte, lte } from "drizzle-orm";
 import { nanoid } from "nanoid";
 import { headers } from "next/headers";
 import { revalidatePath } from "next/cache";
+import { addDays, endOfDay, startOfDay } from "date-fns";
 
 // Create a new event
 export async function createEvent(data: {
@@ -143,5 +144,31 @@ export async function deleteEvent(id: string) {
   } catch (error) {
     console.error("Error deleting event:", error);
     throw new Error("Failed to delete event");
+  }
+}
+
+export async function getRecentEventsAroundToday() {
+  const session = await auth.api.getSession({ headers: await headers() });
+  if (!session?.user?.id) throw new Error("Unauthorized");
+
+  const today = new Date();
+  const startDate = startOfDay(addDays(today, -2));
+  const endDate = endOfDay(addDays(today, 2));
+
+  try {
+    return await db
+      .select()
+      .from(events)
+      .where(
+        and(
+          eq(events.userId, session.user.id),
+          gte(events.start, startDate),
+          lte(events.start, endDate)
+        )
+      )
+      .orderBy(events.start);
+  } catch (error) {
+    console.error("Error fetching recent events:", error);
+    throw new Error("Failed to fetch recent events");
   }
 }

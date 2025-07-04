@@ -53,6 +53,20 @@ export async function getIdeasCount(): Promise<number> {
   return Number(result[0]?.count ?? 0);
 }
 
+// Get the recent 4 ideas from the db
+export async function getRecentIdeas(limit = 4) {
+  const session = await auth.api.getSession({ headers: await headers() });
+
+  if (!session?.user?.id) throw new Error("Unauthorized");
+
+  return await db
+    .select()
+    .from(ideas)
+    .where(eq(ideas.userId, session.user.id))
+    .orderBy(sql`created_at DESC`) // Ensure you have a created_at column
+    .limit(limit);
+}
+
 // Get a single idea by ID
 export async function getIdeaById(id: string) {
   const session = await auth.api.getSession({ headers: await headers() });

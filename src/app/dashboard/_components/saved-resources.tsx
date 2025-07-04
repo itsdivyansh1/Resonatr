@@ -1,10 +1,16 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { RiBookmark3Line } from "@remixicon/react";
 
-const resources = [
-  { title: "Hook Writing Guide", type: "PDF", source: "Notion" },
-  { title: "Color Grading in Reels", type: "Video", source: "YouTube" },
-  { title: "IG Algorithm Update 2024", type: "Article", source: "Medium" },
+type Resources = {
+  title: string;
+  type: string;
+  source: string;
+};
+
+const resources: Resources[] = [
+  // { title: "Hook Writing Guide", type: "PDF", source: "Notion" },
+  // { title: "Color Grading in Reels", type: "Video", source: "YouTube" },
+  // { title: "IG Algorithm Update 2024", type: "Article", source: "Medium" },
 ];
 
 export default function SavedResources() {

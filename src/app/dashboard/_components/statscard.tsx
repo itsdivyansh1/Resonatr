@@ -21,10 +21,7 @@ const platforms = [
   {
     platform: "Instagram",
     icon: <RiInstagramLine className="text-pink-500 w-5 h-5" />,
-    followers: "25.1k",
-    posts: 8,
-    growth: "+7.2%",
-    connected: true,
+    connected: false,
   },
   {
     platform: "Facebook",
@@ -34,10 +31,7 @@ const platforms = [
   {
     platform: "Twitter",
     icon: <RiTwitterXFill className="text-black dark:text-white w-5 h-5" />,
-    followers: "9.6k",
-    posts: 6,
-    growth: "+3.4%",
-    connected: true,
+    connected: false,
   },
   {
     platform: "LinkedIn",
@@ -80,7 +74,7 @@ export default function StatsCards() {
               </>
             ) : (
               <button className="cursor-pointer text-xs text-center text-muted-foreground border border-dashed rounded-md p-3 bg-muted/40">
-                🔌 Not connected to {item.platform}
+                🔌 Comming soon. {item.platform}
               </button>
             )}
           </CardContent>

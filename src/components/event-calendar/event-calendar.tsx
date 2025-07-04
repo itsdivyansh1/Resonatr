@@ -406,6 +406,7 @@ export function EventCalendar({
             setIsEventDialogOpen(false);
             setSelectedEvent(null);
           }}
+          // @ts-ignore
           onSave={handleEventSave}
           onDelete={handleEventDelete}
         />

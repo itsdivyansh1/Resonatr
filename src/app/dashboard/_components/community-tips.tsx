@@ -1,19 +1,17 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { RiChatSmile2Line } from "@remixicon/react";
 
-const tips = [
-  {
-    message: "💡 Try posting Reels between 9AM–11AM for best engagement.",
-    by: "creatorinsights.ai",
-  },
-  {
-    message: "🎬 Batch shoot 3 scripts in one session to save time.",
-    by: "Community Member",
-  },
-  {
-    message: "📌 Use CTAs in first 3 seconds of shorts!",
-    by: "Team Resonatr",
-  },
+type Tip = {
+  message: string;
+  by: string;
+};
+
+// Retrieve the tips from the database
+const tips: Tip[] = [
+  // {
+  //   message: "💡 Try posting Reels between 9AM–11AM for best engagement.",
+  //   by: "creatorinsights.ai",
+  // },
 ];
 
 export default function CommunityTips() {
@@ -35,6 +33,7 @@ export default function CommunityTips() {
             <p className="text-xs text-muted-foreground mt-1">— {tip.by}</p>
           </div>
         ))}
+        {/* @ts-ignore */}
         {tips.length === 0 && (
           <p className="text-sm text-muted-foreground text-center py-10">
             No tips available right now.
