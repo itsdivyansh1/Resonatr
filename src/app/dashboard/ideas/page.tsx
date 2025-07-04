@@ -1,8 +1,10 @@
+// app/dashboard/ideas/page.tsx
 "use client";
 
-import { JSX, useEffect, useState } from "react";
+import { JSX } from "react";
 import Link from "next/link";
 import { format, parseISO } from "date-fns";
+import { useQuery } from "@tanstack/react-query";
 import {
   RiYoutubeFill,
   RiInstagramLine,
@@ -44,51 +46,74 @@ const platformMap: Record<string, { icon: JSX.Element; color: string }> = {
     icon: <RiLinkedinFill className="text-blue-500 w-5 h-5" />,
     color: "bg-white/10 text-white",
   },
-
   Facebook: {
     icon: <RiFacebookBoxFill className="text-blue-500 w-5 h-5" />,
     color: "bg-white/10 text-white",
   },
-
   Unknown: {
     icon: <RiLightbulbFlashLine className="text-muted w-5 h-5" />,
     color: "bg-muted text-muted-foreground",
   },
 };
 
+const IdeaSkeleton = () => (
+  <Card className="p-4 h-full flex flex-col gap-4">
+    <div className="flex items-start justify-between">
+      <div className="flex items-center gap-2">
+        <Skeleton className="w-5 h-5 rounded" />
+        <Skeleton className="w-32 h-4" />
+      </div>
+      <Skeleton className="w-16 h-6 rounded" />
+    </div>
+    <Skeleton className="w-24 h-3" />
+    <Skeleton className="w-full h-16 rounded" />
+  </Card>
+);
+
 export default function IdeasPage() {
-  const [ideas, setIdeas] = useState<Idea[]>([]);
-  const [loading, setLoading] = useState(true);
+  const {
+    data: ideas = [],
+    isLoading,
+    error,
+  } = useQuery({
+    queryKey: ["ideas"],
+    queryFn: async (): Promise<Idea[]> => {
+      const res = await getIdeas();
+      return res
+        .map((r) => ({
+          id: r.id,
+          title: r.title,
+          platform: r.platform ?? "Unknown",
+          stage: r.stage ?? "Idea",
+          description: r.description ?? "",
+          createdAt:
+            r.createdAt instanceof Date
+              ? r.createdAt
+              : parseISO(String(r.createdAt)),
+        }))
+        .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
+    },
+    staleTime: 5 * 60 * 1000, // 5 minutes
+  });
 
-  useEffect(() => {
-    async function fetchIdeas() {
-      try {
-        const res = await getIdeas();
-
-        const formatted: Idea[] = res
-          .map((r) => ({
-            id: r.id,
-            title: r.title,
-            platform: r.platform ?? "Unknown",
-            stage: r.stage ?? "Idea",
-            description: r.description ?? "",
-            createdAt:
-              r.createdAt instanceof Date
-                ? r.createdAt
-                : parseISO(String(r.createdAt)),
-          }))
-          .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime()); // Most recent first
-
-        setIdeas(formatted);
-      } catch (err) {
-        console.error("Failed to fetch ideas", err);
-      } finally {
-        setLoading(false);
-      }
-    }
-
-    fetchIdeas();
-  }, []);
+  if (error) {
+    return (
+      <div className="space-y-6">
+        <div className="flex items-center justify-between flex-wrap gap-4">
+          <h1 className="text-2xl font-semibold flex items-center gap-2">
+            <RiLightbulbFlashLine className="size-5 text-yellow-500" />
+            Your Ideas
+          </h1>
+          <Link href="/dashboard/ideas/new">
+            <Button variant="default">+ New Idea</Button>
+          </Link>
+        </div>
+        <div className="border border-dashed p-6 rounded-lg text-center text-red-500 bg-red-500/10">
+          Failed to load ideas. Please try again.
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -102,19 +127,15 @@ export default function IdeasPage() {
         </Link>
       </div>
 
-      {loading ? (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
+      {isLoading ? (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 ">
           {Array.from({ length: 6 }).map((_, i) => (
-            <Card key={i} className="p-4 h-full flex flex-col gap-4">
-              <Skeleton className="w-3/5 h-4" />
-              <Skeleton className="w-1/4 h-3" />
-              <Skeleton className="w-full h-[60px] rounded-md" />
-            </Card>
+            <IdeaSkeleton key={i} />
           ))}
         </div>
       ) : ideas.length === 0 ? (
         <div className="border border-dashed p-6 rounded-lg text-center text-muted-foreground bg-muted/30">
-          You haven’t added any ideas yet.
+          You haven't added any ideas yet.
         </div>
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">

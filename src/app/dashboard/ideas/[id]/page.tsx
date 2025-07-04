@@ -1,11 +1,13 @@
+// app/dashboard/ideas/[id]/page.tsx
 "use client";
 
-import { JSX, useEffect, useState } from "react";
+import { JSX, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
-import { getIdeaById, updateIdea, deleteIdea } from "@/actions/idea";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Skeleton } from "@/components/ui/skeleton";
 import {
   RiYoutubeFill,
   RiInstagramLine,
@@ -25,13 +27,14 @@ import {
   AlertDialogCancel,
   AlertDialogAction,
 } from "@/components/ui/alert-dialog";
+import { getIdeaById, updateIdea, deleteIdea } from "@/actions/idea";
 
 type Idea = {
   id: string;
   title: string;
-  platform: string;
-  stage: string;
-  description: string;
+  platform: string | null;
+  stage: string | null;
+  description: string | null;
   createdAt: string | Date;
 };
 
@@ -41,9 +44,43 @@ const platformIcons: Record<string, JSX.Element> = {
   Twitter: <RiTwitterXFill className="text-white w-5 h-5" />,
 };
 
+const IdeaDetailSkeleton = () => (
+  <div className="space-y-6">
+    <div className="flex items-center justify-between">
+      <div className="flex items-center gap-2">
+        <Skeleton className="w-5 h-5 rounded" />
+        <Skeleton className="w-48 h-8" />
+      </div>
+      <div className="flex gap-2">
+        <Skeleton className="w-20 h-9" />
+        <Skeleton className="w-20 h-9" />
+      </div>
+    </div>
+    <Card>
+      <CardHeader className="pb-2">
+        <Skeleton className="w-48 h-6" />
+        <div className="flex items-center gap-2 mt-2">
+          <Skeleton className="w-16 h-6 rounded" />
+          <Skeleton className="w-16 h-6 rounded" />
+          <Skeleton className="w-32 h-4" />
+        </div>
+      </CardHeader>
+      <CardContent>
+        <div className="space-y-2">
+          <Skeleton className="w-full h-4" />
+          <Skeleton className="w-full h-4" />
+          <Skeleton className="w-3/4 h-4" />
+        </div>
+      </CardContent>
+    </Card>
+  </div>
+);
+
 export default function EditIdeaPage() {
   const params = useParams();
   const router = useRouter();
+  const queryClient = useQueryClient();
+  const [editing, setEditing] = useState(false);
 
   const id =
     typeof params?.id === "string"
@@ -52,74 +89,95 @@ export default function EditIdeaPage() {
         ? params.id[0]
         : "";
 
-  const [idea, setIdea] = useState<Idea | null>(null);
-  const [editing, setEditing] = useState(false);
-  const [loading, setLoading] = useState(true);
+  // Fetch idea data
+  const {
+    data: idea,
+    isLoading,
+    error,
+  } = useQuery({
+    queryKey: ["idea", id],
+    queryFn: () => getIdeaById(id),
+    enabled: !!id,
+    staleTime: 5 * 60 * 1000,
+  });
 
-  useEffect(() => {
-    async function load() {
-      if (!id) return;
-      try {
-        setLoading(true);
-        const data: any = await getIdeaById(id);
-        if (data) {
-          setIdea(data);
-        }
-      } catch (err) {
-        console.error("Error fetching idea:", err);
-      } finally {
-        setLoading(false);
-      }
-    }
-    load();
-  }, [id]);
+  // Update idea mutation
+  const updateIdeaMutation = useMutation({
+    mutationFn: ({ id, data }: { id: string; data: Partial<FormData> }) =>
+      updateIdea(id, data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["ideas"] });
+      queryClient.invalidateQueries({ queryKey: ["idea", id] });
+      setEditing(false);
+      router.refresh();
+    },
+  });
+
+  // Delete idea mutation
+  const deleteIdeaMutation = useMutation({
+    mutationFn: deleteIdea,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["ideas"] });
+      router.push("/dashboard/ideas");
+    },
+  });
 
   const handleUpdate = async (formData: FormData) => {
-    await updateIdea(id, {
-      title: formData.title,
-      platform: formData.platform,
-      stage: formData.stage,
-      content: formData.content,
-    });
-
-    setIdea((prev) =>
-      prev
-        ? {
-            ...prev,
-            title: formData.title,
-            platform: formData.platform,
-            stage: formData.stage,
-            description: formData.content,
-          }
-        : null
-    );
-
-    setEditing(false);
-    router.refresh();
+    try {
+      await updateIdeaMutation.mutateAsync({
+        id,
+        data: {
+          title: formData.title,
+          platform: formData.platform,
+          stage: formData.stage,
+          content: formData.content,
+        },
+      });
+    } catch (error) {
+      console.error("Error updating idea:", error);
+    }
   };
 
   const handleDelete = async () => {
-    await deleteIdea(id);
-    router.push("/dashboard/ideas");
+    try {
+      await deleteIdeaMutation.mutateAsync(id);
+    } catch (error) {
+      console.error("Error deleting idea:", error);
+    }
   };
 
   const handleCancelEdit = () => {
     setEditing(false);
   };
 
-  if (loading) {
-    return <p className="text-muted-foreground">Loading...</p>;
+  if (isLoading) {
+    return <IdeaDetailSkeleton />;
   }
 
-  if (!idea) {
-    return <p className="text-muted-foreground">Idea not found.</p>;
+  if (error || !idea) {
+    return (
+      <div className="text-center py-8">
+        <p className="text-muted-foreground">
+          {error ? "Error loading idea" : "Idea not found"}
+        </p>
+        <Button
+          onClick={() => router.push("/dashboard/ideas")}
+          variant="outline"
+          className="mt-4"
+        >
+          Back to Ideas
+        </Button>
+      </div>
+    );
   }
 
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
-          {platformIcons[idea.platform] ?? null}
+          {idea.platform && platformIcons[idea.platform]
+            ? platformIcons[idea.platform]
+            : null}
           <h1 className="text-2xl font-semibold">{idea.title}</h1>
         </div>
         <div className="flex gap-2">
@@ -127,15 +185,19 @@ export default function EditIdeaPage() {
             onClick={() => setEditing(!editing)}
             variant="outline"
             size="sm"
+            disabled={updateIdeaMutation.isPending}
           >
             <RiEdit2Line className="w-4 h-4 mr-1" />
             {editing ? "Cancel" : "Edit"}
           </Button>
 
-          {/* AlertDialog for Delete */}
           <AlertDialog>
             <AlertDialogTrigger asChild>
-              <Button variant="destructive" size="sm">
+              <Button
+                variant="destructive"
+                size="sm"
+                disabled={deleteIdeaMutation.isPending}
+              >
                 <RiDeleteBinLine className="w-4 h-4 mr-1" />
                 Delete
               </Button>
@@ -153,8 +215,9 @@ export default function EditIdeaPage() {
                 <AlertDialogAction
                   onClick={handleDelete}
                   className="bg-destructive text-white hover:bg-destructive/90"
+                  disabled={deleteIdeaMutation.isPending}
                 >
-                  Yes, delete
+                  {deleteIdeaMutation.isPending ? "Deleting..." : "Yes, delete"}
                 </AlertDialogAction>
               </AlertDialogFooter>
             </AlertDialogContent>
@@ -166,8 +229,8 @@ export default function EditIdeaPage() {
         <CardHeader className="pb-2">
           <CardTitle>{idea.title}</CardTitle>
           <div className="flex items-center gap-2 mt-2">
-            <Badge variant="secondary">{idea.platform}</Badge>
-            <Badge variant="outline">{idea.stage}</Badge>
+            <Badge variant="secondary">{idea.platform ?? "Unknown"}</Badge>
+            <Badge variant="outline">{idea.stage ?? "Unknown"}</Badge>
             <span className="text-xs text-muted-foreground">
               Created on{" "}
               {typeof idea.createdAt === "string"
@@ -181,19 +244,22 @@ export default function EditIdeaPage() {
             <IdeaForm
               initialData={{
                 title: idea.title,
-                platform: idea.platform,
-                stage: idea.stage,
-                content: idea.description,
+                platform: idea.platform ?? undefined,
+                stage: idea.stage ?? undefined,
+                content: idea.description ?? undefined,
               }}
               onSubmit={handleUpdate}
               onCancel={handleCancelEdit}
-              submitLabel="Update Idea"
+              submitLabel={
+                updateIdeaMutation.isPending ? "Updating..." : "Update Idea"
+              }
               showResetButton={false}
+              disabled={updateIdeaMutation.isPending}
             />
           ) : (
             <div
               className="prose prose-sm prose-invert max-w-full text-muted-foreground"
-              dangerouslySetInnerHTML={{ __html: idea.description }}
+              dangerouslySetInnerHTML={{ __html: idea.description ?? "" }}
             />
           )}
         </CardContent>

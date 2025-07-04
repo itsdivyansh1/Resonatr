@@ -66,6 +66,7 @@ interface IdeaFormProps {
   submitLabel?: string;
   showResetButton?: boolean;
   isLoading?: boolean;
+  disabled: boolean;
 }
 
 export default function IdeaForm({
